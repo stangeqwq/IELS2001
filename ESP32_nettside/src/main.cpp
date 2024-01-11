@@ -1,10 +1,11 @@
-==
+#include <Arduino.h>
 
-#define LIGHT_SENSOR_PIN 18
+int LIGHT_SENSOR_PIN = 5;
 
 void setup() {
   // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
+
 }
 
 void loop() {
