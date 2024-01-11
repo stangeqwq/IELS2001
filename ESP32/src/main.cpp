@@ -10,9 +10,8 @@ const char *password = "";
 
 const int LED = 18;
 const int BUZZ = 23;
-const int channelLED = 2;
-const int channelBUZZ = 1;
-const int channelSERVO1 = 0;
+const int channelLED = 15;
+const int channelBUZZ = 14;
 
 void setup()
 {
@@ -41,6 +40,7 @@ void setup()
 
 
   Serial.begin(9600);
+  /*
   Serial.println("Trying to connect to");
   Serial.println(ssid);
 
@@ -54,13 +54,12 @@ void setup()
   Serial.println("WiFi connected successfully");
   Serial.print("Got IP: ");
   Serial.println(WiFi.localIP());
+  */
 
   ledcSetup(channelLED, 2000, 8);
   ledcSetup(channelBUZZ, 2000, 8);
-  ledcSetup(channelSERVO1, 2000, 8);
   ledcAttachPin(BUZZ, channelBUZZ);
   ledcAttachPin(LED, channelLED);
-  ledcAttachPin(servoPin, channelSERVO1);
   ledcWrite(channelLED, 0);
 
   servo1.attach(servoPin);
@@ -85,17 +84,13 @@ void loop()
   
   for (int posDegrees = 0; posDegrees <= 180; posDegrees++)
   {
-    Serial.println("Writing");
     servo1.write(posDegrees);
-    Serial.println(posDegrees);
     delay(20);
   }
 
   for (int posDegrees = 180; posDegrees >= 0; posDegrees--)
   {
-    Serial.println("Writing");
     servo1.write(posDegrees);
-    Serial.println(posDegrees);
     delay(20);
   }
   
