@@ -86,9 +86,6 @@ String GetHTML_Data(int sensorDataArr[]) {
   return HTML;
 }
 
-
-
-
 void handle_root() {
   server.send(200, "text/html", GetHTML_Data(sensorDataArr));
 }
