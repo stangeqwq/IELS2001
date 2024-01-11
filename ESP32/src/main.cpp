@@ -1,6 +1,6 @@
 #include <WiFi.h>
 #include <ESP32Servo.h>
-#include <HTTPClient.h>
+//#include <HTTPClient.h>
 static const int servoPin = 13;
 
 Servo servo1;
@@ -40,7 +40,7 @@ void setup()
 
 
   Serial.begin(9600);
-  /*
+  
   Serial.println("Trying to connect to");
   Serial.println(ssid);
 
@@ -54,7 +54,6 @@ void setup()
   Serial.println("WiFi connected successfully");
   Serial.print("Got IP: ");
   Serial.println(WiFi.localIP());
-  */
 
   ledcSetup(channelLED, 2000, 8);
   ledcSetup(channelBUZZ, 2000, 8);
