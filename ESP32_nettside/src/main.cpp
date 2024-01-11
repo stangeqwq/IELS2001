@@ -1,19 +1,31 @@
-#include <Arduino.h>
+==
 
-// put function declarations here:
-int myFunction(int, int);
+#define LIGHT_SENSOR_PIN 18
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
-  
+  // initialize serial communication at 9600 bits per second:
+  Serial.begin(9600);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
+  // reads the input on analog pin (value between 0 and 4095)
+  int analogValue = analogRead(LIGHT_SENSOR_PIN);
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  Serial.print("Analog Value = ");
+  Serial.print(analogValue);   // the raw analog reading
+
+  // We'll have a few threshholds, qualitatively determined
+  if (analogValue < 40) {
+    Serial.println(" => Dark");
+  } else if (analogValue < 800) {
+    Serial.println(" => Dim");
+  } else if (analogValue < 2000) {
+    Serial.println(" => Light");
+  } else if (analogValue < 3200) {
+    Serial.println(" => Bright");
+  } else {
+    Serial.println(" => Very bright");
+  }
+
+  delay(500);
 }
