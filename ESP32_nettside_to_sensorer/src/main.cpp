@@ -13,11 +13,15 @@ const char* password = "eqaz3123";
 WebServer server(80);
 
 // Handle root url (/)
-
+void handle_root();
+String GetHTML_Data(int sensorDataArr[]);
 
 void setup() {
   // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
+  Serial.print("Trying to connect to:");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
   // Check wi-fi is connected to wi-fi network
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -38,6 +42,7 @@ void setup() {
 
 void loop() {
   server.handleClient();
+  handle_root();
 
   // reads the input on analog pin (value between 0 and 4095)
   int analogValue = analogRead(LIGHT_SENSOR_PIN);
