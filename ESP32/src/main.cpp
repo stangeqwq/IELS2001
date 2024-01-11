@@ -57,8 +57,10 @@ void setup()
 
   ledcSetup(channelLED, 2000, 8);
   ledcSetup(channelBUZZ, 2000, 8);
+  ledcSetup(channelSERVO1, 2000, 8);
   ledcAttachPin(BUZZ, channelBUZZ);
   ledcAttachPin(LED, channelLED);
+  ledcAttachPin(servoPin, channelSERVO1);
   ledcWrite(channelLED, 0);
 
   servo1.attach(servoPin);
