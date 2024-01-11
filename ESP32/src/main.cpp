@@ -10,9 +10,9 @@ const char *password = "";
 
 const int LED = 18;
 const int BUZZ = 23;
-const int channelLED = 0;
+const int channelLED = 2;
 const int channelBUZZ = 1;
-const int channelSERVO1 = 2;
+const int channelSERVO1 = 0;
 
 void setup()
 {
@@ -61,14 +61,7 @@ void setup()
   ledcAttachPin(LED, channelLED);
   ledcWrite(channelLED, 0);
 
-  
-  // Allow allocation of all timers
-  ESP32PWM::allocateTimer(0);
-  ESP32PWM::allocateTimer(1);
-  ESP32PWM::allocateTimer(2);
-  ESP32PWM::allocateTimer(3);
-  servo1.setPeriodHertz(50);    // standard 50 hz servo
-  servo1.attach(servoPin, 1000, 2000);
+  servo1.attach(servoPin);
   
 }
 
@@ -87,8 +80,10 @@ void loop()
   }
   ledcWriteTone(channelBUZZ, 1000);
   
+  
   for (int posDegrees = 0; posDegrees <= 180; posDegrees++)
   {
+    Serial.println("Writing");
     servo1.write(posDegrees);
     Serial.println(posDegrees);
     delay(20);
@@ -96,6 +91,7 @@ void loop()
 
   for (int posDegrees = 180; posDegrees >= 0; posDegrees--)
   {
+    Serial.println("Writing");
     servo1.write(posDegrees);
     Serial.println(posDegrees);
     delay(20);
