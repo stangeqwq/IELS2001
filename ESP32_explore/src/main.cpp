@@ -12,4 +12,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   int read_p_1 = analogRead(39);
   int read_p_2 = analogRead(34);
-}
+  Serial.println(read_p_1);
+  Serial.println(read_p_2);
+
+  }
