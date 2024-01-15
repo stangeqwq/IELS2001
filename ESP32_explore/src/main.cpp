@@ -62,7 +62,7 @@ String getSliderValues(){
 
 // Initialize SPIFFS
 void initFS() {
-  if (!SPIFFS.begin()) {
+  if (!SPIFFS.begin(true)) {
     Serial.println("An error has occurred while mounting SPIFFS");
   }
   else{
@@ -141,7 +141,7 @@ void initWebSocket() {
 
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(ledPin1, OUTPUT);
   pinMode(ledPin2, OUTPUT);
   pinMode(ledPin3, OUTPUT);
