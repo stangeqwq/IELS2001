@@ -42,7 +42,7 @@ void setup() {
 
 void loop() {
   server.handleClient();
-  handle_root();
+  
 
   // reads the input on analog pin (value between 0 and 4095)
   int analogValue = analogRead(LIGHT_SENSOR_PIN);
