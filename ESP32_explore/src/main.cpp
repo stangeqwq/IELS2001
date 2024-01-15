@@ -163,7 +163,7 @@ void setup() {
   
   // Web Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/index.html", "text/html");
+    request->send(SPIFFS, "web_data/index.html", "text/html");
   });
   
   server.serveStatic("/", SPIFFS, "/");
