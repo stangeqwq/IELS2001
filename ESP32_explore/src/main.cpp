@@ -1,182 +1,83 @@
+/*
+ * INFO:
+ * This code demonstrates how to use the ESP32 DAC in an interrupt based configuration.
+ * The sampling frequency and resolution of the samples and the DAC can be adjusted and experimented with
+ *
+ * Note: the ESP32 DAC has a fixed resolution of 8 bits, so the possibility for varying
+ * DAC resolution is simulated by representing the desired resolution within an 8 bit range.
+ */
+ 
+/*
+ * Global constants for the array of samples to be written to the DAC.
+ * Default is a sine wave of 16 values between 0 and 255.
+ */
+const int sampleArrayLen = 16;
+const int sampleArray[sampleArrayLen] = {
+  0x80,
+  0xb0,
+  0xda,
+  0xf5,
+  0xff,
+  0xf5,
+  0xda,
+  0xb0,
+  0x80,
+  0x4f,
+  0x25,
+  0xa,
+  0x0,
+  0xa,
+  0x25,
+  0x4f,
+};
+ 
+//Change these parameters in order to change the sampling properties of the system
+#define SAMPLING_PERIOD 100  //In microseconds, should be at least 50.
+#define DAC_RESOLUTION 8     //Resolution of the DAC. Must be between 1 and 8 bits.
+ 
+//Hardware configuration
+#define DAC_PIN 26
+ 
+// Variable for storing the timer properties. Leave this alone.
+hw_timer_t *timer = NULL;
+ 
+// Constant with a mask for setting the correct DAC resolution. Leave this alone.
+const int resolution_mask = ~((1 << (8 - DAC_RESOLUTION)) - 1);
+ 
 /* 
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/esp32-web-server-websocket-sliders/
-  
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files.
-  
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
-*/
-
-#include <Arduino.h>
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include "SPIFFS.h"
-#include <Arduino_JSON.h>
-
-// Replace with your network credentials
-const char* ssid = "NTNU-IOT";
-const char* password = "";
-
-// Create AsyncWebServer object on port 80
-AsyncWebServer server(80);
-// Create a WebSocket object
-
-AsyncWebSocket ws("/ws");
-// Set LED GPIO
-const int ledPin1 = 12;
-const int ledPin2 = 13;
-const int ledPin3 = 14;
-
-String message = "";
-String sliderValue1 = "0";
-String sliderValue2 = "0";
-String sliderValue3 = "0";
-
-int dutyCycle1;
-int dutyCycle2;
-int dutyCycle3;
-
-// setting PWM properties
-const int freq = 5000;
-const int ledChannel1 = 0;
-const int ledChannel2 = 1;
-const int ledChannel3 = 2;
-
-const int resolution = 8;
-
-//Json Variable to Hold Slider Values
-JSONVar sliderValues;
-
-//Get Slider Values
-String getSliderValues(){
-  sliderValues["sliderValue1"] = String(sliderValue1);
-  sliderValues["sliderValue2"] = String(sliderValue2);
-  sliderValues["sliderValue3"] = String(sliderValue3);
-
-  String jsonString = JSON.stringify(sliderValues);
-  return jsonString;
-}
-
-// Initialize SPIFFS
-void initFS() {
-  if (!SPIFFS.begin(true)) {
-    Serial.println("An error has occurred while mounting SPIFFS");
-  }
-  else{
-   Serial.println("SPIFFS mounted successfully");
+ * Interrupt service routine that runs every with a period SAMPLING_PERIOD. 
+ * Used for sampling, signal processing and digital to analog conversion.
+ */
+void ARDUINO_ISR_ATTR onTimer() {
+  //Variable for storing the actual value to be written to the DAC.
+  static int sampleDAC;
+ 
+  //Current index of the sampleArray. Defined as static as its only used in this function.
+  static int i = 0;
+ 
+  //Using the DAC to convert and write the sampleDAC variable on DAC_PIN with the given resolution for the DAC.
+  dacWrite(DAC_PIN, (sampleArray[i] & resolution_mask));
+ 
+  if (i >= sampleArrayLen - 1) {
+    //Reached end of sampleArray. Resetting i.
+    i = 0;
+  } else {
+    //Incrementing i.
+    i++;
   }
 }
-
-// Initialize WiFi
-void initWiFi() {
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi ..");
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print('.');
-    delay(1000);
-  }
-  Serial.println(WiFi.localIP());
-}
-
-void notifyClients(String sliderValues) {
-  ws.textAll(sliderValues);
-}
-
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
-  AwsFrameInfo *info = (AwsFrameInfo*)arg;
-  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
-    data[len] = 0;
-    message = (char*)data;
-    if (message.indexOf("1s") >= 0) {
-      sliderValue1 = message.substring(2);
-      dutyCycle1 = map(sliderValue1.toInt(), 0, 100, 0, 255);
-      Serial.println(dutyCycle1);
-      Serial.print(getSliderValues());
-      notifyClients(getSliderValues());
-    }
-    if (message.indexOf("2s") >= 0) {
-      sliderValue2 = message.substring(2);
-      dutyCycle2 = map(sliderValue2.toInt(), 0, 100, 0, 255);
-      Serial.println(dutyCycle2);
-      Serial.print(getSliderValues());
-      notifyClients(getSliderValues());
-    }    
-    if (message.indexOf("3s") >= 0) {
-      sliderValue3 = message.substring(2);
-      dutyCycle3 = map(sliderValue3.toInt(), 0, 100, 0, 255);
-      Serial.println(dutyCycle3);
-      Serial.print(getSliderValues());
-      notifyClients(getSliderValues());
-    }
-    if (strcmp((char*)data, "getValues") == 0) {
-      notifyClients(getSliderValues());
-    }
-  }
-}
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
-  switch (type) {
-    case WS_EVT_CONNECT:
-      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-      break;
-    case WS_EVT_DISCONNECT:
-      Serial.printf("WebSocket client #%u disconnected\n", client->id());
-      break;
-    case WS_EVT_DATA:
-      handleWebSocketMessage(arg, data, len);
-      break;
-    case WS_EVT_PONG:
-    case WS_EVT_ERROR:
-      break;
-  }
-}
-
-void initWebSocket() {
-  ws.onEvent(onEvent);
-  server.addHandler(&ws);
-}
-
-
+ 
+//--------The code below this point can be left alone--------
+ 
 void setup() {
-  Serial.begin(9600);
-  pinMode(ledPin1, OUTPUT);
-  pinMode(ledPin2, OUTPUT);
-  pinMode(ledPin3, OUTPUT);
-  initFS();
-  initWiFi();
-
-  // configure LED PWM functionalitites
-  ledcSetup(ledChannel1, freq, resolution);
-  ledcSetup(ledChannel2, freq, resolution);
-  ledcSetup(ledChannel3, freq, resolution);
-
-  // attach the channel to the GPIO to be controlled
-  ledcAttachPin(ledPin1, ledChannel1);
-  ledcAttachPin(ledPin2, ledChannel2);
-  ledcAttachPin(ledPin3, ledChannel3);
-
-
-  initWebSocket();
-  
-  // Web Server Root URL
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "web_data/index.html", "text/html");
-  });
-  
-  server.serveStatic("/", SPIFFS, "/");
-
-  // Start server
-  server.begin();
-
+  //Initializing timer with 1Mhz frequency. This means one tick every microsecond.
+  timer = timerBegin(1000000);
+  timerAttachInterrupt(timer, &onTimer);
+ 
+  //Call the onTimer function with the given period (in microseconds), repeating te timer and with unlimited count.
+  timerAlarm(timer, SAMPLING_PERIOD, true, 0);
 }
-
+ 
 void loop() {
-  ledcWrite(ledChannel1, dutyCycle1);
-  ledcWrite(ledChannel2, dutyCycle2);
-  ledcWrite(ledChannel3, dutyCycle3);
-
-  ws.cleanupClients();
+  //empty loop
 }
