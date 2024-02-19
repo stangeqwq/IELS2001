@@ -7,8 +7,14 @@
 const int potPin = 34;
 int sensorDataArr[] = {0, 0};
 
-const char* ssid = "Njord Wifi";
-const char* password = "eqaz3123";
+// SSID & Password
+const char* ssid = "Joshua's ESP32 router";  // Enter your SSID here
+const char* password = "esp32password12345678";  //Enter your Password here
+
+// IP Address details
+IPAddress local_ip(192, 168, 1, 1);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
 
 WebServer server(80);
 
@@ -20,6 +26,9 @@ void setup() {
   // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
   Serial.print("Trying to connect to:");
+  // Create SoftAP
+  WiFi.softAP(ssid, password);
+  WiFi.softAPConfig(local_ip, gateway, subnet);
   Serial.println(ssid);
   WiFi.begin(ssid, password);
   // Check wi-fi is connected to wi-fi network
