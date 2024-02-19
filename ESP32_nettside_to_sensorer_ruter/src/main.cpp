@@ -8,15 +8,15 @@ const int potPin = 34;
 int sensorDataArr[] = {0, 0};
 
 // SSID & Password
-const char* ssid = "Joshua's ESP32 router";  // Enter your SSID here
+const char* ssid = "Joshua's ESP32 server";  // Enter your SSID here
 const char* password = "esp32password12345678";  //Enter your Password here
 
 // IP Address details
-IPAddress local_ip(192, 168, 1, 1);
+IPAddress local_ip(192, 168, 200, 200);
 IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 
-WebServer server(80);
+WebServer server(7777);
 
 // Handle root url (/)
 void handle_root();
@@ -29,23 +29,14 @@ void setup() {
   // Create SoftAP
   WiFi.softAP(ssid, password);
   WiFi.softAPConfig(local_ip, gateway, subnet);
+   Serial.print("Connect to My access point: ");
   Serial.println(ssid);
-  WiFi.begin(ssid, password);
-  // Check wi-fi is connected to wi-fi network
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected successfully");
-  Serial.print("Got IP: ");
-  Serial.println(WiFi.localIP());  //Show ESP32 IP on serial
 
   server.on("/", handle_root);
 
   server.begin();
   Serial.println("HTTP server started");
-  delay(100); 
+  delay(100);
 
 }
 

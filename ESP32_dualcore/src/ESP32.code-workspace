@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "ESP32",
+			"path": ".."
+		},
+		{
+			"name": "PlatformIO",
+			"path": "../../../../../Desktop/NTNU/VÅR2024/IELS2001/PlatformIO"
+		}
+	],
+	"settings": {}
+}
