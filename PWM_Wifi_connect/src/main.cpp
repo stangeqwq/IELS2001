@@ -39,7 +39,7 @@ void setup()
 */
 
 
-  Serial.begin(9600);
+  Serial.begin(115200);
   
   Serial.println("Trying to connect to");
   Serial.println(ssid);
